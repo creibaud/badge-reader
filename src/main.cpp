@@ -27,9 +27,14 @@ void loop() {
   if (rfid.readUid()) {
     if (rfid.isValid(String(API))) {
       Serial.println("RFID card is Valid\n");
+      digitalWrite(GREEN_LED_PIN, HIGH);
+      digitalWrite(RED_LED_PIN, LOW);
     } else {
       Serial.println("RFID card is Invalid\n");
     }
   }
+
+  digitalWrite(GREEN_LED_PIN, LOW);
+  digitalWrite(RED_LED_PIN, HIGH);
   delay(1000);
 }
