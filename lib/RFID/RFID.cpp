@@ -35,7 +35,7 @@ bool RFID::readUid() {
 void RFID::postUid(String api) {
     std::vector<String> uids = getUids(api);
     if (uid != "" && find(uids.begin(), uids.end(), uid) == uids.end()) {
-        String url = "https://" + api;
+        String url = "http://" + api + "/rfid";
 
         HTTPClient http;
 
@@ -56,13 +56,6 @@ void RFID::postUid(String api) {
             Serial.println(httpResponseCode);
 
             String response = http.getString();
-            Serial.println("Response: " + response);
-        } else {
-            Serial.print("Error code: ");
-            Serial.println(httpResponseCode);
-
-            String response = http.getString();
-            Serial.println("Response: " + response);
         }
 
         http.end();
@@ -75,7 +68,7 @@ void RFID::postUid(String api) {
 
 std::vector<String> RFID::getUids(String api) {
     std::vector<String> uids = {};
-    String url = "https://" + api;
+    String url = "http://" + api + "/rfid";
 
     HTTPClient http;
 

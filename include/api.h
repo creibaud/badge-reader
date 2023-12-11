@@ -1,1 +1,1 @@
-#define API "badge-reader-api-d4b4396849ba.herokuapp.com/rfid"
+#define API "badge-reader-api-d4b4396849ba.herokuapp.com"
