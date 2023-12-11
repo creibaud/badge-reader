@@ -26,6 +26,12 @@ void setup() {
 void loop() {
   wifi.verifyConnection();
 
+  if (wifi.isConnected()) {
+    digitalWrite(YELLOW_LED_PIN, HIGH);
+  } else {
+    digitalWrite(YELLOW_LED_PIN, LOW);
+  }
+
   if (rfid.readUid()) {
     if (rfid.isValid(String(API))) {
       if (rfid.isAdministrator(String(API), String(RFID_ADMIN)) && digitalRead(BUTTON_PIN) == LOW) {
