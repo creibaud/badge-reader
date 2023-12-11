@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include <RFID.h>
 #include <WIFI.h>
-#include <iostream>
 
 #include "secret.h"
 #include "pin.h"
@@ -13,6 +12,10 @@ RFID rfid(RFID_SS_PIN, RFID_RST_PIN);
 void setup() {
   Serial.begin(115200);
   rfid.init();
+
+  pinMode(RED_LED_PIN, OUTPUT);
+  pinMode(YELLOW_LED_PIN, OUTPUT);
+  pinMode(GREEN_LED_PIN, OUTPUT);
 
   delay(3000);
   wifi.connect();
@@ -28,6 +31,5 @@ void loop() {
       Serial.println("RFID card is Invalid\n");
     }
   }
-
   delay(1000);
 }

@@ -11,10 +11,14 @@ void WIFI::connect() {
 
     while (!isConnected()) {
         Serial.print(".");
-        delay(1000);
+        digitalWrite(YELLOW_LED_PIN, HIGH);
+        delay(500);
+        digitalWrite(YELLOW_LED_PIN, LOW);
+        delay(500);
     }
 
     Serial.println("Connected !");
+    digitalWrite(YELLOW_LED_PIN, HIGH);
 }
 
 bool WIFI::isConnected() const {
