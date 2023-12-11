@@ -32,7 +32,7 @@ bool RFID::readUid() {
     return false;
 }
 
-void RFID::postUid(String api) {
+bool RFID::postUid(String api) {
     std::vector<String> uids = getUids(api);
     if (uid != "" && find(uids.begin(), uids.end(), uid) == uids.end()) {
         String url = "http://" + api + "/rfid";
@@ -51,11 +51,18 @@ void RFID::postUid(String api) {
 
         int httpResponseCode = http.POST(jsonData);
 
-        if (httpResponseCode > 0) {
+        if (httpResponseCode == 200) {
             Serial.print("POST request success : ");
             Serial.println(httpResponseCode);
 
             String response = http.getString();
+            return true;
+        } else {
+            Serial.print("Error code: ");
+            Serial.println(httpResponseCode);
+
+            String response = http.getString();
+            Serial.println("Response: " + response);
         }
 
         http.end();
@@ -64,6 +71,7 @@ void RFID::postUid(String api) {
     }
 
     Serial.println("");
+    return false;
 }
 
 std::vector<String> RFID::getUids(String api) {
@@ -119,4 +127,9 @@ std::vector<String> RFID::getUids(String api) {
 bool RFID::isValid(String api) {
     std::vector<String> uids = getUids(api);
     return uid != "" && find(uids.begin(), uids.end(), uid) != uids.end();
+}
+
+bool RFID::isAdministrator(String api, String adminUid) {
+    std::vector<String> uids = getUids(api);
+    return uid != "" && find(uids.begin(), uids.end(), String(adminUid)) != uids.end();
 }

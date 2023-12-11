@@ -17,6 +17,8 @@ void setup() {
   pinMode(YELLOW_LED_PIN, OUTPUT);
   pinMode(GREEN_LED_PIN, OUTPUT);
 
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
+
   delay(3000);
   wifi.connect();
 }
@@ -26,10 +28,30 @@ void loop() {
 
   if (rfid.readUid()) {
     if (rfid.isValid(String(API))) {
-      Serial.println("RFID card is Valid\n");
-      digitalWrite(GREEN_LED_PIN, HIGH);
-      digitalWrite(RED_LED_PIN, LOW);
-      delay(2000);
+      if (rfid.isAdministrator(String(API), String(RFID_ADMIN)) && digitalRead(BUTTON_PIN) == LOW) {
+        Serial.println("RFID card is Administrator\n");
+        digitalWrite(RED_LED_PIN, LOW);
+        
+        while (digitalRead(BUTTON_PIN) == LOW) {
+          if (rfid.readUid()) {
+            if (rfid.postUid(String(API))) {
+              digitalWrite(GREEN_LED_PIN, HIGH);
+              delay(2000);
+            }
+          }
+
+          digitalWrite(GREEN_LED_PIN, LOW);
+          digitalWrite(YELLOW_LED_PIN, HIGH);
+          delay(500);
+          digitalWrite(YELLOW_LED_PIN, LOW);
+          delay(500);
+        }
+      } else {
+        Serial.println("RFID card is Valid\n");
+        digitalWrite(GREEN_LED_PIN, HIGH);
+        digitalWrite(RED_LED_PIN, LOW);
+        delay(2000);
+      }
     } else {
       Serial.println("RFID card is Invalid\n");
       digitalWrite(GREEN_LED_PIN, LOW);
