@@ -29,9 +29,17 @@ void loop() {
       Serial.println("RFID card is Valid\n");
       digitalWrite(GREEN_LED_PIN, HIGH);
       digitalWrite(RED_LED_PIN, LOW);
-      delay(1000);
+      delay(2000);
     } else {
       Serial.println("RFID card is Invalid\n");
+      digitalWrite(GREEN_LED_PIN, LOW);
+
+      for (int i = 0; i < 3; i++) {
+        digitalWrite(RED_LED_PIN, HIGH);
+        delay(500);
+        digitalWrite(RED_LED_PIN, LOW);
+        delay(500);
+      }
     }
   }
 
