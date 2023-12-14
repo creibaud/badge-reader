@@ -49,7 +49,7 @@ String RFID::loginAPI() {
     http.addHeader("Content-Type", "application/json");
 
     Serial.println("Sending JSON data...");
-    String jsonData = "{\"username\":\"" + username + "\"}";
+    String jsonData = "{\"username\":\"" + username + "\",\"password\":\"" + password + "\"}";
 
     int httpResponseCode = http.POST(jsonData);
 
