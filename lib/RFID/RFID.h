@@ -19,6 +19,7 @@ class RFID {
         bool readUid();
         bool postUid(String api);
         std::vector<String> getUids(String api);
+        void deleteUid(String api);
         bool isValid(String api);
         bool isAdministrator(String api, String adminUid);
 };
