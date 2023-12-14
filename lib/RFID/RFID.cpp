@@ -81,7 +81,7 @@ void RFID::loginAPI() {
 
 bool RFID::postUid() {
     std::vector<int> uids = getUids();
-    if (isValid()) {
+    if (uid != 0 && find(uids.begin(), uids.end(), uid) == uids.end()) {
         String url = "http://" + api + "/addRFID";
 
         HTTPClient http;
