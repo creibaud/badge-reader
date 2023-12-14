@@ -17,11 +17,12 @@ class RFID {
         RFID(byte _ssPin, byte _rstPin);
         void init();
         bool readUid();
-        bool postUid(String api);
-        std::vector<String> getUids(String api);
-        void deleteUid(String api);
-        bool isValid(String api);
-        bool isAdministrator(String api, String adminUid);
+        String loginAPI(String api, String username);
+        bool postUid(String api, String username);
+        std::vector<String> getUids(String api, String username);
+        void deleteUid(String api, String username);
+        bool isValid(String api, String username);
+        bool isAdministrator(String api, String username, String adminUid);
 };
 
 #endif // RFID_H

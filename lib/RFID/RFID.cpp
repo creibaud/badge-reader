@@ -32,8 +32,49 @@ bool RFID::readUid() {
     return false;
 }
 
-bool RFID::postUid(String api) {
-    std::vector<String> uids = getUids(api);
+String RFID::loginAPI(String api, String username) {
+    String url = "http://" + api + "/login";
+
+    HTTPClient http;
+
+    Serial.print("Login to API: ");
+    Serial.println(url);
+    http.begin(url);
+
+    Serial.println("Sending POST request...");
+    http.addHeader("Content-Type", "application/json");
+
+    Serial.println("Sending JSON data...");
+    String jsonData = "{\"username\":\"" + username + "\"}";
+
+    int httpResponseCode = http.POST(jsonData);
+
+    if (httpResponseCode == 200) {
+        Serial.print("POST request success : ");
+        Serial.println(httpResponseCode);
+
+        String response = http.getString();
+        Serial.println("Response: " + response);
+
+        DynamicJsonDocument doc(1024);
+        deserializeJson(doc, response);
+
+        String token = doc["accessToken"].as<String>();
+        return token;
+    } else {
+        Serial.print("Error code: ");
+        Serial.println(httpResponseCode);
+
+        String response = http.getString();
+        Serial.println("Response: " + response);
+    }
+
+    http.end();
+    return "";
+}
+
+bool RFID::postUid(String api, String username) {
+    std::vector<String> uids = getUids(api, username);
     if (uid != "" && find(uids.begin(), uids.end(), uid) == uids.end()) {
         String url = "http://" + api + "/addRFID";
 
@@ -74,58 +115,63 @@ bool RFID::postUid(String api) {
     return false;
 }
 
-std::vector<String> RFID::getUids(String api) {
+std::vector<String> RFID::getUids(String api, String username) {
     std::vector<String> uids = {};
-    String url = "http://" + api + "/getRFID";
 
-    HTTPClient http;
+    String token = loginAPI(api, username);
 
-    Serial.print("Getting RFID data from: ");
-    Serial.println(url);
-    http.begin(url);
+    if (token != "") {
+        String url = "http://" + api + "/getRFID";
 
-    Serial.println("Sending GET request...");
-    int httpResponseCode = http.GET();
+        HTTPClient http;
 
-    if (httpResponseCode == 200) {
-        Serial.println("GET request success");
+        Serial.print("Getting RFID data from: ");
+        Serial.println(url);
+        http.begin(url);
 
-        String response = http.getString();
-        
-        DynamicJsonDocument doc(1024);
-        deserializeJson(doc, response);
+        Serial.println("Sending GET request...");
+        int httpResponseCode = http.GET();
 
-        if (doc.is<JsonArray>()) {
-            JsonArray array = doc.as<JsonArray>();
-            Serial.println("RFID data received:");
+        if (httpResponseCode == 200) {
+            Serial.println("GET request success");
 
-            for (JsonVariant elt : array) {
-                if (elt.is<JsonObject>()) {
-                    String uidValue = elt["uid"].as<String>();
-                    Serial.println(uidValue);
-                    uids.push_back(uidValue);
-                } else {
-                    Serial.println("Error: Each element in the array should be an object.");
+            String response = http.getString();
+            
+            DynamicJsonDocument doc(1024);
+            deserializeJson(doc, response);
+
+            if (doc.is<JsonArray>()) {
+                JsonArray array = doc.as<JsonArray>();
+                Serial.println("RFID data received:");
+
+                for (JsonVariant elt : array) {
+                    if (elt.is<JsonObject>()) {
+                        String uidValue = elt["uid"].as<String>();
+                        Serial.println(uidValue);
+                        uids.push_back(uidValue);
+                    } else {
+                        Serial.println("Error: Each element in the array should be an object.");
+                    }
                 }
+            } else {
+                Serial.println("Error: Response should be an array.");
             }
         } else {
-            Serial.println("Error: Response should be an array.");
+            Serial.print("Error code: ");
+            Serial.println(httpResponseCode);
+
+            String response = http.getString();
+            Serial.println("Response: " + response);
         }
-    } else {
-        Serial.print("Error code: ");
-        Serial.println(httpResponseCode);
 
-        String response = http.getString();
-        Serial.println("Response: " + response);
+        http.end();
     }
-
-    http.end();
     Serial.println("");
     return uids;
 }
 
-void RFID::deleteUid(String api) {
-    std::vector<String> uids = getUids(api);
+void RFID::deleteUid(String api, String username) {
+    std::vector<String> uids = getUids(api, username);
     if (uid != "" && find(uids.begin(), uids.end(), uid) != uids.end()) {
         String url = "http://" + api + "/deleteRFID";
 
@@ -164,12 +210,12 @@ void RFID::deleteUid(String api) {
     Serial.println("");
 }
 
-bool RFID::isValid(String api) {
-    std::vector<String> uids = getUids(api);
+bool RFID::isValid(String api, String username) {
+    std::vector<String> uids = getUids(api, username);
     return uid != "" && find(uids.begin(), uids.end(), uid) != uids.end();
 }
 
-bool RFID::isAdministrator(String api, String adminUid) {
-    std::vector<String> uids = getUids(api);
+bool RFID::isAdministrator(String api, String username, String adminUid) {
+    std::vector<String> uids = getUids(api, username);
     return uid != "" && find(uids.begin(), uids.end(), String(adminUid)) != uids.end();
 }
