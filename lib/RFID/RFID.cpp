@@ -81,7 +81,7 @@ void RFID::loginAPI() {
 
 bool RFID::postUid() {
     std::vector<int> uids = getUids();
-    if (uid != 0 && find(uids.begin(), uids.end(), uid) != uids.end()) {
+    if (isValid()) {
         String url = "http://" + api + "/addRFID";
 
         HTTPClient http;
@@ -179,7 +179,7 @@ std::vector<int> RFID::getUids() {
 
 void RFID::deleteUid() {
     std::vector<int> uids = getUids();
-    if (uid != 0 && find(uids.begin(), uids.end(), uid) != uids.end()) {
+    if (isValid()) {
         String url = "http://" + api + "/deleteRFID";
 
         HTTPClient http;
