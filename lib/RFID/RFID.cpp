@@ -4,9 +4,13 @@ RFID::RFID(byte _ssPin, byte _rstPin) : mfrc522(_ssPin, _rstPin) {
     uid = "";
 }
 
-void RFID::init() {
+void RFID::init(String _api, String _username, String _password) {
     SPI.begin();
     mfrc522.PCD_Init();
+
+    api = _api;
+    username = _username;
+    password = _password;
 }
 
 bool RFID::readUid() {
@@ -32,7 +36,7 @@ bool RFID::readUid() {
     return false;
 }
 
-String RFID::loginAPI(String api, String username) {
+String RFID::loginAPI() {
     String url = "http://" + api + "/login";
 
     HTTPClient http;
@@ -73,8 +77,8 @@ String RFID::loginAPI(String api, String username) {
     return "";
 }
 
-bool RFID::postUid(String api, String username) {
-    std::vector<String> uids = getUids(api, username);
+bool RFID::postUid() {
+    std::vector<String> uids = getUids();
     if (uid != "" && find(uids.begin(), uids.end(), uid) == uids.end()) {
         String url = "http://" + api + "/addRFID";
 
@@ -115,10 +119,10 @@ bool RFID::postUid(String api, String username) {
     return false;
 }
 
-std::vector<String> RFID::getUids(String api, String username) {
+std::vector<String> RFID::getUids() {
     std::vector<String> uids = {};
 
-    String token = loginAPI(api, username);
+    String token = loginAPI();
 
     if (token != "") {
         String url = "http://" + api + "/getRFID";
@@ -170,8 +174,8 @@ std::vector<String> RFID::getUids(String api, String username) {
     return uids;
 }
 
-void RFID::deleteUid(String api, String username) {
-    std::vector<String> uids = getUids(api, username);
+void RFID::deleteUid() {
+    std::vector<String> uids = getUids();
     if (uid != "" && find(uids.begin(), uids.end(), uid) != uids.end()) {
         String url = "http://" + api + "/deleteRFID";
 
@@ -210,12 +214,12 @@ void RFID::deleteUid(String api, String username) {
     Serial.println("");
 }
 
-bool RFID::isValid(String api, String username) {
-    std::vector<String> uids = getUids(api, username);
+bool RFID::isValid() {
+    std::vector<String> uids = getUids();
     return uid != "" && find(uids.begin(), uids.end(), uid) != uids.end();
 }
 
-bool RFID::isAdministrator(String api, String username, String adminUid) {
-    std::vector<String> uids = getUids(api, username);
+bool RFID::isAdministrator(String adminUid) {
+    std::vector<String> uids = getUids();
     return uid != "" && find(uids.begin(), uids.end(), String(adminUid)) != uids.end();
 }

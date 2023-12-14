@@ -11,7 +11,7 @@ RFID rfid(RFID_SS_PIN, RFID_RST_PIN);
 
 void setup() {
   Serial.begin(115200);
-  rfid.init();
+  rfid.init(API, USERNAME, PASSWORD);
 
   pinMode(RED_LED_PIN, OUTPUT);
   pinMode(YELLOW_LED_PIN, OUTPUT);
@@ -27,14 +27,14 @@ void loop() {
   wifi.verifyConnection();
 
   if (rfid.readUid()) {
-    if (rfid.isValid(String(API))) {
-      if (rfid.isAdministrator(String(API), String(RFID_ADMIN)) && digitalRead(BUTTON_PIN) == LOW) {
+    if (rfid.isValid()) {
+      if (rfid.isAdministrator(String(RFID_ADMIN)) && digitalRead(BUTTON_PIN) == LOW) {
         Serial.println("RFID card is Administrator\n");
         digitalWrite(RED_LED_PIN, LOW);
         
         while (digitalRead(BUTTON_PIN) == LOW) {
           if (rfid.readUid()) {
-            if (rfid.postUid(String(API))) {
+            if (rfid.postUid()) {
               digitalWrite(GREEN_LED_PIN, HIGH);
               delay(2000);
             }

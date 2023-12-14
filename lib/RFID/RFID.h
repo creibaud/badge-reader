@@ -13,16 +13,19 @@ class RFID {
     private:
         MFRC522 mfrc522;
         String uid;
+        String api;
+        String username;
+        String password;
     public:
         RFID(byte _ssPin, byte _rstPin);
-        void init();
+        void init(String _api, String _username, String _password);
         bool readUid();
-        String loginAPI(String api, String username);
-        bool postUid(String api, String username);
-        std::vector<String> getUids(String api, String username);
-        void deleteUid(String api, String username);
-        bool isValid(String api, String username);
-        bool isAdministrator(String api, String username, String adminUid);
+        String loginAPI();
+        bool postUid();
+        std::vector<String> getUids();
+        void deleteUid();
+        bool isValid();
+        bool isAdministrator(String adminUid);
 };
 
 #endif // RFID_H
