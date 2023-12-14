@@ -28,7 +28,7 @@ void loop() {
 
   if (rfid.readUid()) {
     if (rfid.isValid()) {
-      if (rfid.isAdministrator(String(RFID_ADMIN)) && digitalRead(BUTTON_PIN) == LOW) {
+      if (rfid.isAdministrator(RFID_ADMIN) && digitalRead(BUTTON_PIN) == LOW) {
         Serial.println("RFID card is Administrator\n");
         digitalWrite(RED_LED_PIN, LOW);
         

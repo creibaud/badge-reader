@@ -1,7 +1,7 @@
 #include "RFID.h"
 
 RFID::RFID(byte _ssPin, byte _rstPin) : mfrc522(_ssPin, _rstPin) {
-    uid = "";
+    uid = 0;
 }
 
 void RFID::init(String _api, String _username, String _password) {
@@ -11,22 +11,23 @@ void RFID::init(String _api, String _username, String _password) {
     api = _api;
     username = _username;
     password = _password;
+    token = "";
 }
 
 bool RFID::readUid() {
     if (mfrc522.PICC_IsNewCardPresent() && mfrc522.PICC_ReadCardSerial()) {
         Serial.print("RFID card present: ");
 
-        uid = "";
+        String stringUID = "";
+        uid = 0;
 
         for (int i = 0; i < mfrc522.uid.size; i++) {
-            uid += (mfrc522.uid.uidByte[i] < 0x10 ? " 0" : " ");
-            uid += String(mfrc522.uid.uidByte[i], HEX);
+            stringUID += String(mfrc522.uid.uidByte[i], DEC);
         }
 
-        uid.remove(0, 1);
-        uid.toUpperCase();
-        Serial.println(uid);
+        uid = stringUID.toInt();
+
+        Serial.println(stringUID);
         mfrc522.PICC_HaltA();
 
         Serial.println("");
@@ -36,7 +37,7 @@ bool RFID::readUid() {
     return false;
 }
 
-String RFID::loginAPI() {
+void RFID::loginAPI() {
     String url = "http://" + api + "/login";
 
     HTTPClient http;
@@ -53,6 +54,8 @@ String RFID::loginAPI() {
 
     int httpResponseCode = http.POST(jsonData);
 
+    token = "";
+
     if (httpResponseCode == 200) {
         Serial.print("POST request success : ");
         Serial.println(httpResponseCode);
@@ -63,8 +66,8 @@ String RFID::loginAPI() {
         DynamicJsonDocument doc(1024);
         deserializeJson(doc, response);
 
-        String token = doc["accessToken"].as<String>();
-        return token;
+        token = doc["accessToken"].as<String>();
+        Serial.println("Access Token: " + token);
     } else {
         Serial.print("Error code: ");
         Serial.println(httpResponseCode);
@@ -74,12 +77,11 @@ String RFID::loginAPI() {
     }
 
     http.end();
-    return "";
 }
 
 bool RFID::postUid() {
-    std::vector<String> uids = getUids();
-    if (uid != "" && find(uids.begin(), uids.end(), uid) == uids.end()) {
+    std::vector<int> uids = getUids();
+    if (uid != 0 && find(uids.begin(), uids.end(), uid) == uids.end()) {
         String url = "http://" + api + "/addRFID";
 
         HTTPClient http;
@@ -90,9 +92,10 @@ bool RFID::postUid() {
 
         Serial.println("Sending POST request...");
         http.addHeader("Content-Type", "application/json");
+        http.addHeader("Authorization", "Bearer " + token);
 
         Serial.println("Sending JSON data...");
-        String jsonData = "{\"uid\":\"" + uid + "\"}";
+        String jsonData = "{\"uid\":\"" + String(uid) + "\"}";
 
         int httpResponseCode = http.POST(jsonData);
 
@@ -119,11 +122,10 @@ bool RFID::postUid() {
     return false;
 }
 
-std::vector<String> RFID::getUids() {
-    std::vector<String> uids = {};
-
-    String token = loginAPI();
-
+std::vector<int> RFID::getUids() {
+    std::vector<int> uids = {};
+    loginAPI();
+    
     if (token != "") {
         String url = "http://" + api + "/getRFID";
 
@@ -134,6 +136,7 @@ std::vector<String> RFID::getUids() {
         http.begin(url);
 
         Serial.println("Sending GET request...");
+        http.addHeader("Authorization", "Bearer " + token);
         int httpResponseCode = http.GET();
 
         if (httpResponseCode == 200) {
@@ -152,7 +155,7 @@ std::vector<String> RFID::getUids() {
                     if (elt.is<JsonObject>()) {
                         String uidValue = elt["uid"].as<String>();
                         Serial.println(uidValue);
-                        uids.push_back(uidValue);
+                        uids.push_back(uidValue.toInt());
                     } else {
                         Serial.println("Error: Each element in the array should be an object.");
                     }
@@ -175,8 +178,8 @@ std::vector<String> RFID::getUids() {
 }
 
 void RFID::deleteUid() {
-    std::vector<String> uids = getUids();
-    if (uid != "" && find(uids.begin(), uids.end(), uid) != uids.end()) {
+    std::vector<int> uids = getUids();
+    if (uid != 0 && find(uids.begin(), uids.end(), uid) != uids.end()) {
         String url = "http://" + api + "/deleteRFID";
 
         HTTPClient http;
@@ -187,9 +190,10 @@ void RFID::deleteUid() {
 
         Serial.println("Sending POST request...");
         http.addHeader("Content-Type", "application/json");
+        http.addHeader("Authorization", "Bearer " + token);
 
         Serial.println("Sending JSON data...");
-        String jsonData = "{\"uid\":\"" + uid + "\"}";
+        String jsonData = "{\"uid\":\"" + String(uid) + "\"}";
 
         int httpResponseCode = http.POST(jsonData);
 
@@ -215,11 +219,11 @@ void RFID::deleteUid() {
 }
 
 bool RFID::isValid() {
-    std::vector<String> uids = getUids();
-    return uid != "" && find(uids.begin(), uids.end(), uid) != uids.end();
+    std::vector<int> uids = getUids();
+    return uid != 0 && find(uids.begin(), uids.end(), uid) != uids.end();
 }
 
-bool RFID::isAdministrator(String adminUid) {
-    std::vector<String> uids = getUids();
-    return uid != "" && find(uids.begin(), uids.end(), String(adminUid)) != uids.end();
+bool RFID::isAdministrator(int adminUid) {
+    std::vector<int> uids = getUids();
+    return uid != 0 && find(uids.begin(), uids.end(), adminUid) != uids.end();
 }
