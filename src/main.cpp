@@ -11,31 +11,17 @@ RFID rfid(RFID_SS_PIN, RFID_RST_PIN);
 
 Preferences preferences;
 
-String WIFI_SSID;
-String WIFI_PASSWORD;
+String WIFI_SSID = "kali";
+String WIFI_PASSWORD = "ndOeyN7x";
 
-int RFID_ADMIN;
+int RFID_ADMIN = 1633105153;
 
-String USERNAME;
-String PASSWORD;
+String USERNAME = "creibaud";
+String PASSWORD = "ioBJNj7TG#6zC9P@";
 
 void setup() {
   Serial.begin(115200);
 
-  preferences.begin("wifi", false);
-  WIFI_SSID = preferences.getString("WIFI_SSID");
-  WIFI_PASSWORD = preferences.getString("WIFI_PASSWORD");
-  preferences.end();
-
-  preferences.begin("rfid", false);
-  RFID_ADMIN = preferences.getInt("RFID_ADMIN");
-  preferences.end();
-
-  preferences.begin("api", false);
-  USERNAME = preferences.getString("USERNAME");
-  PASSWORD = preferences.getString("PASSWORD");
-  preferences.end();
-  
   rfid.init(API, USERNAME, PASSWORD);
 
   pinMode(RED_LED_PIN, OUTPUT);
@@ -48,8 +34,6 @@ void setup() {
 
   delay(3000);
   wifi.connect();
-
-  Serial.println(WIFI_SSID);
 }
 
 void loop() {
