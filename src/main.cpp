@@ -1,16 +1,41 @@
 #include <Arduino.h>
 #include <RFID.h>
 #include <WIFI.h>
+#include <Preferences.h>
 
-#include "secret.h"
 #include "pin.h"
 #include "api.h"
 
-WIFI wifi(WIFI_SSID, WIFI_PASSWORD);
+WIFI wifi;
 RFID rfid(RFID_SS_PIN, RFID_RST_PIN);
+
+Preferences preferences;
+
+String WIFI_SSID;
+String WIFI_PASSWORD;
+
+int RFID_ADMIN;
+
+String USERNAME;
+String PASSWORD;
 
 void setup() {
   Serial.begin(115200);
+
+  preferences.begin("wifi", false);
+  WIFI_SSID = preferences.getString("WIFI_SSID");
+  WIFI_PASSWORD = preferences.getString("WIFI_PASSWORD");
+  preferences.end();
+
+  preferences.begin("rfid", false);
+  RFID_ADMIN = preferences.getInt("RFID_ADMIN");
+  preferences.end();
+
+  preferences.begin("api", false);
+  USERNAME = preferences.getString("USERNAME");
+  PASSWORD = preferences.getString("PASSWORD");
+  preferences.end();
+  
   rfid.init(API, USERNAME, PASSWORD);
 
   pinMode(RED_LED_PIN, OUTPUT);
@@ -19,8 +44,12 @@ void setup() {
 
   pinMode(BUTTON_PIN, INPUT_PULLUP);
 
+  wifi.init(WIFI_SSID, WIFI_PASSWORD);
+
   delay(3000);
   wifi.connect();
+
+  Serial.println(WIFI_SSID);
 }
 
 void loop() {

@@ -8,10 +8,11 @@
 
 class WIFI {
     private:
-        const String ssid;
-        const String password;
+        String ssid;
+        String password;
     public:
-        WIFI(const String _ssid, const String _password);
+        WIFI();
+        void init(String _ssid, String _password);
         void connect();
         bool isConnected() const;
         void verifyConnection();

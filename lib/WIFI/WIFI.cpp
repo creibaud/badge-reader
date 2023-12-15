@@ -1,7 +1,10 @@
 #include "WIFI.h"
 
-WIFI::WIFI(const String _ssid, const String _password) 
-    : ssid(_ssid), password(_password) {
+WIFI::WIFI() {}
+
+void WIFI::init(String _ssid, String _password) {
+    ssid = _ssid;
+    password = _password;
 }
 
 void WIFI::connect() {
