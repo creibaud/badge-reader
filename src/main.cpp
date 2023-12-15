@@ -11,16 +11,66 @@ RFID rfid(RFID_SS_PIN, RFID_RST_PIN);
 
 Preferences preferences;
 
-String WIFI_SSID = "kali";
-String WIFI_PASSWORD = "ndOeyN7x";
+String WIFI_SSID;
+String WIFI_PASSWORD;
 
-int RFID_ADMIN = 1633105153;
+int RFID_ADMIN;
 
-String USERNAME = "creibaud";
-String PASSWORD = "ioBJNj7TG#6zC9P@";
+String USERNAME;
+String PASSWORD;
+
+String StringToHex(const String& str) {
+  String hexString = "";
+  for (size_t i = 0; i < str.length(); i++) {
+    char c = str.charAt(i);
+    hexString += String(c, HEX);
+  }
+  return hexString;
+}
+
+String HexToString(const String& hex) {
+  String str = "";
+  for (size_t i = 0; i < hex.length(); i += 2) {
+    String hexChar = hex.substring(i, i + 2);
+    char c = strtol(hexChar.c_str(), NULL, 16);
+    str += c;
+  }
+  return str;
+}
 
 void setup() {
+
   Serial.begin(115200);
+
+  /*
+  preferences.begin("wifi", false);
+  preferences.putString("WIFI_SSID", StringToHex(WIFI_SSID));
+  preferences.putString("WIFI_PASSWORD", StringToHex(WIFI_PASSWORD));
+  preferences.end();
+
+  preferences.begin("rfid", false);
+  preferences.putString("RFID_ADMIN", String(RFID_ADMIN, HEX));
+  preferences.end();
+
+  preferences.begin("api", false);
+  preferences.putString("USERNAME", StringToHex(USERNAME));
+  preferences.putString("PASSWORD", StringToHex(PASSWORD));
+  preferences.end();
+  */
+
+  preferences.begin("wifi", false);
+  WIFI_SSID = HexToString(preferences.getString("WIFI_SSID"));
+  WIFI_PASSWORD = HexToString(preferences.getString("WIFI_PASSWORD"));
+  preferences.end();
+
+  preferences.begin("rfid", false);
+  RFID_ADMIN = strtol(preferences.getString("RFID_ADMIN").c_str(), NULL, 16);
+  preferences.end();
+
+  preferences.begin("api", false);
+  USERNAME = HexToString(preferences.getString("USERNAME"));
+  PASSWORD = HexToString(preferences.getString("PASSWORD"));
+  preferences.end();
 
   rfid.init(API, USERNAME, PASSWORD);
 
